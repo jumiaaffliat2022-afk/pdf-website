@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="arabic" content="text/html; charset=windows-1256">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Pro - موقع متقدم لمعالجة الملفات</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -106,6 +107,16 @@
         
         .btn-primary {
             background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
             color: white;
         }
         
@@ -244,6 +255,7 @@
             margin-bottom: 2rem;
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
         }
         
         .upload-area:hover {
@@ -255,6 +267,110 @@
             font-size: 3rem;
             color: var(--primary);
             margin-bottom: 1rem;
+        }
+        
+        #fileInput {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .processing-section {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .processing-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .option-card {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .option-card:hover {
+            border-color: var(--primary);
+        }
+        
+        .option-card.selected {
+            border-color: var(--success);
+            background-color: rgba(76, 201, 240, 0.1);
+        }
+        
+        .download-section {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         
         /* تذييل الصفحة */
@@ -364,63 +480,81 @@
         <div class="container">
             <h2 class="section-title">أدواتنا المتقدمة</h2>
             <div class="tools-grid">
-                <div class="tool-card">
+                <div class="tool-card" data-tool="merge">
                     <div class="tool-icon">
                         <i class="fas fa-object-group"></i>
                     </div>
                     <h3>دمج الملفات</h3>
                     <p>دمج عدة ملفات PDF في ملف واحد مع الحفاظ على الجودة</p>
                 </div>
-                <div class="tool-card">
+                <div class="tool-card" data-tool="split">
                     <div class="tool-icon">
                         <i class="fas fa-cut"></i>
                     </div>
                     <h3>تقسيم الملفات</h3>
                     <p>تقسيم ملف PDF إلى عدة ملفات حسب الصفحات أو النطاقات</p>
                 </div>
-                <div class="tool-card">
+                <div class="tool-card" data-tool="convert">
                     <div class="tool-icon">
                         <i class="fas fa-exchange-alt"></i>
                     </div>
                     <h3>تحويل الملفات</h3>
                     <p>تحويل بين صيغ الملفات المختلفة بدقة وجودة عالية</p>
                 </div>
-                <div class="tool-card">
+                <div class="tool-card" data-tool="edit">
                     <div class="tool-icon">
                         <i class="fas fa-edit"></i>
                     </div>
                     <h3>تحرير الملفات</h3>
                     <p>تعديل النصوص والصور وإضافة التعليقات والتوقيعات</p>
                 </div>
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3>حماية الملفات</h3>
-                    <p>إضافة كلمات مرور وتشفير للملفات لحماية محتواها</p>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-file-image"></i>
-                    </div>
-                    <h3>PDF إلى صور</h3>
-                    <p>تحويل صفحات PDF إلى صور بصيغ JPG, PNG, TIFF</p>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-file-word"></i>
-                    </div>
-                    <h3>PDF إلى Word</h3>
-                    <p>تحويل ملفات PDF إلى مستندات Word قابلة للتعديل</p>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-file-powerpoint"></i>
-                    </div>
-                    <h3>PDF إلى PowerPoint</h3>
-                    <p>تحويل العروض التقديمية من PDF إلى PowerPoint</p>
-                </div>
             </div>
+        </div>
+    </section>
+
+    <!-- قسم التحميل -->
+    <section class="upload-section">
+        <div class="container">
+            <h2 class="section-title" id="actionTitle">اختر الملفات للمعالجة</h2>
+            
+            <div class="upload-area">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>اسحب وأفلت الملفات هنا</h3>
+                <p>أو انقر لاختيار الملفات من جهازك</p>
+                <p>يدعم جميع أنواع الملفات: PDF, DOC, DOCX, PPT, PPTX, JPG, PNG</p>
+                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png">
+            </div>
+            
+            <div class="file-list" id="fileList">
+                <h3>الملفات المختارة:</h3>
+                <div id="fileItems"></div>
+            </div>
+            
+            <div class="progress-bar" id="progressBar">
+                <div class="progress" id="progress"></div>
+            </div>
+            
+            <div class="processing-section" id="processingSection">
+                <h3 id="processingTitle">اختر خيارات المعالجة</h3>
+                <div class="processing-options" id="processingOptions">
+                    <!-- سيتم تعبئتها ديناميكياً -->
+                </div>
+                <button class="btn btn-success" id="processBtn">
+                    <i class="fas fa-cog"></i> بدء المعالجة
+                </button>
+            </div>
+            
+            <div class="download-section" id="downloadSection">
+                <h3>تمت المعالجة بنجاح!</h3>
+                <p>ملفك جاهز للتحميل</p>
+                <button class="btn btn-success" id="downloadBtn">
+                    <i class="fas fa-download"></i> تحميل الملف
+                </button>
+            </div>
+            
+            <button class="btn btn-primary" id="startProcess" style="display: none;">
+                <i class="fas fa-rocket"></i> ابدأ المعالجة الآن
+            </button>
         </div>
     </section>
 
@@ -441,35 +575,7 @@
                     <h3><i class="fas fa-infinity"></i> غير محدود</h3>
                     <p>لا توجد قيود على عدد أو حجم الملفات التي يمكنك معالجتها في الإصدار المجاني.</p>
                 </div>
-                <div class="feature-card">
-                    <h3><i class="fas fa-cloud"></i> تخزين سحابي</h3>
-                    <p>إمكانية ربط حسابك بخدمات التخزين السحابي مثل Google Drive وDropbox.</p>
-                </div>
-                <div class="feature-card">
-                    <h3><i class="fas fa-mobile-alt"></i> متوافق مع جميع الأجهزة</h3>
-                    <p>واجهة مستخدم متجاوبة تعمل بكفاءة على الحواسيب والأجهزة اللوحية والهواتف الذكية.</p>
-                </div>
-                <div class="feature-card">
-                    <h3><i class="fas fa-language"></i> دعم متعدد اللغات</h3>
-                    <p>واجهة مستخدم متعددة اللغات مع دعم كامل للغة العربية واللغات الأخرى.</p>
-                </div>
             </div>
-        </div>
-    </section>
-
-    <!-- قسم التحميل -->
-    <section class="upload-section">
-        <div class="container">
-            <h2 class="section-title">ابدأ معالجة ملفاتك الآن</h2>
-            <div class="upload-area">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <h3>اسحب وأفلت الملفات هنا</h3>
-                <p>أو انقر لاختيار الملفات من جهازك</p>
-                <p>يدعم جميع أنواع الملفات: PDF, DOC, DOCX, PPT, PPTX, JPG, PNG, TIFF</p>
-            </div>
-            <button class="btn btn-primary" style="padding: 12px 30px; font-size: 1.1rem;">
-                <i class="fas fa-rocket"></i> ابدأ المعالجة الآن
-            </button>
         </div>
     </section>
 
@@ -488,7 +594,6 @@
                         <li><a href="#">تقسيم PDF</a></li>
                         <li><a href="#">تحويل PDF</a></li>
                         <li><a href="#">تحرير PDF</a></li>
-                        <li><a href="#">حماية PDF</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
@@ -497,16 +602,6 @@
                         <li><a href="#">الأسئلة الشائعة</a></li>
                         <li><a href="#">اتصل بنا</a></li>
                         <li><a href="#">الشروط والأحكام</a></li>
-                        <li><a href="#">سياسة الخصوصية</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>تابعنا</h3>
-                    <ul>
-                        <li><a href="#"><i class="fab fa-twitter"></i> تويتر</a></li>
-                        <li><a href="#"><i class="fab fa-facebook"></i> فيسبوك</a></li>
-                        <li><a href="#"><i class="fab fa-linkedin"></i> لينكد إن</a></li>
-                        <li><a href="#"><i class="fab fa-github"></i> جيت هاب</a></li>
                     </ul>
                 </div>
             </div>
@@ -517,11 +612,301 @@
     </footer>
 
     <script>
-        // كود جافا سكريبت بسيط للتجربة
+        // حالة التطبيق
+        const appState = {
+            currentTool: null,
+            selectedFiles: [],
+            processingOptions: {}
+        };
+
+        // عناصر DOM
+        const elements = {
+            fileInput: document.getElementById('fileInput'),
+            fileList: document.getElementById('fileList'),
+            fileItems: document.getElementById('fileItems'),
+            startProcess: document.getElementById('startProcess'),
+            progressBar: document.getElementById('progressBar'),
+            progress: document.getElementById('progress'),
+            processingSection: document.getElementById('processingSection'),
+            processingOptions: document.getElementById('processingOptions'),
+            processingTitle: document.getElementById('processingTitle'),
+            processBtn: document.getElementById('processBtn'),
+            downloadSection: document.getElementById('downloadSection'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            actionTitle: document.getElementById('actionTitle')
+        };
+
+        // تهيئة الأحداث
+        function initEvents() {
+            // أحداث بطاقات الأدوات
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const tool = card.dataset.tool;
+                    selectTool(tool);
+                });
+            });
+
+            // حدث اختيار الملفات
+            elements.fileInput.addEventListener('change', handleFileSelect);
+
+            // حدث بدء المعالجة
+            elements.startProcess.addEventListener('click', showProcessingOptions);
+
+            // حدث معالجة الملفات
+            elements.processBtn.addEventListener('click', processFiles);
+
+            // حدث تحميل الملف
+            elements.downloadBtn.addEventListener('click', downloadFile);
+
+            // سحب وإفلات الملفات
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--primary)';
+                uploadArea.style.backgroundColor = 'rgba(67, 97, 238, 0.1)';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '#ccc';
+                uploadArea.style.backgroundColor = '';
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#ccc';
+                uploadArea.style.backgroundColor = '';
+                handleDroppedFiles(e.dataTransfer.files);
+            });
+        }
+
+        // اختيار الأداة
+        function selectTool(tool) {
+            appState.currentTool = tool;
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.style.border = card.dataset.tool === tool ? '3px solid var(--success)' : 'none';
+            });
+
+            // تحديث العنوان حسب الأداة
+            const titles = {
+                merge: 'دمج الملفات',
+                split: 'تقسيم الملفات', 
+                convert: 'تحويل الملفات',
+                edit: 'تحرير الملفات'
+            };
+            elements.actionTitle.textContent = `اختر الملفات لـ ${titles[tool]}`;
+        }
+
+        // معالجة اختيار الملفات
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            handleSelectedFiles(files);
+        }
+
+        // معالجة الملفات المسقطة
+        function handleDroppedFiles(files) {
+            handleSelectedFiles(Array.from(files));
+        }
+
+        // معالجة الملفات المختارة
+        function handleSelectedFiles(files) {
+            if (!appState.currentTool) {
+                alert('يرجى اختيار أداة أولاً');
+                return;
+            }
+
+            appState.selectedFiles = files;
+            displaySelectedFiles();
+            elements.startProcess.style.display = 'inline-block';
+        }
+
+        // عرض الملفات المختارة
+        function displaySelectedFiles() {
+            elements.fileItems.innerHTML = '';
+            appState.selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <i class="fas fa-file ${getFileIcon(file.type)} file-icon"></i>
+                        <div>
+                            <div>${file.name}</div>
+                            <small>${formatFileSize(file.size)}</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" onclick="removeFile(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                elements.fileItems.appendChild(fileItem);
+            });
+            elements.fileList.style.display = 'block';
+        }
+
+        // إزالة ملف
+        function removeFile(index) {
+            appState.selectedFiles.splice(index, 1);
+            displaySelectedFiles();
+            if (appState.selectedFiles.length === 0) {
+                elements.fileList.style.display = 'none';
+                elements.startProcess.style.display = 'none';
+            }
+        }
+
+        // الحصول على أيقونة الملف
+        function getFileIcon(type) {
+            if (type.includes('pdf')) return 'fa-file-pdf';
+            if (type.includes('word') || type.includes('document')) return 'fa-file-word';
+            if (type.includes('powerpoint') || type.includes('presentation')) return 'fa-file-powerpoint';
+            if (type.includes('image')) return 'fa-file-image';
+            return 'fa-file';
+        }
+
+        // تنسيق حجم الملف
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // عرض خيارات المعالجة
+        function showProcessingOptions() {
+            const options = getProcessingOptions();
+            elements.processingOptions.innerHTML = options;
+            elements.processingTitle.textContent = getProcessingTitle();
+            elements.processingSection.style.display = 'block';
+            
+            // إضافة أحداث لخيارات المعالجة
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    appState.processingOptions.option = this.dataset.option;
+                });
+            });
+        }
+
+        // الحصول على خيارات المعالجة
+        function getProcessingOptions() {
+            const options = {
+                merge: [
+                    { value: 'merge-all', label: 'دمج جميع الملفات في ملف واحد' },
+                    { value: 'merge-selected', label: 'دمج الملفات المحددة فقط' }
+                ],
+                split: [
+                    { value: 'split-pages', label: 'تقسيم حسب الصفحات' },
+                    { value: 'split-range', label: 'تقسيم حسب النطاقات' },
+                    { value: 'split-bookmarks', label: 'تقسيم حسب العناوين' }
+                ],
+                convert: [
+                    { value: 'pdf-to-word', label: 'PDF إلى Word' },
+                    { value: 'pdf-to-image', label: 'PDF إلى صور' },
+                    { value: 'word-to-pdf', label: 'Word إلى PDF' },
+                    { value: 'image-to-pdf', label: 'صور إلى PDF' }
+                ],
+                edit: [
+                    { value: 'add-text', label: 'إضافة نصوص' },
+                    { value: 'add-images', label: 'إضافة صور' },
+                    { value: 'add-watermark', label: 'إضافة علامة مائية' },
+                    { value: 'rotate-pages', label: 'تدوير الصفحات' }
+                ]
+            };
+
+            return options[appState.currentTool].map(option => `
+                <div class="option-card" data-option="${option.value}">
+                    <h4>${option.label}</h4>
+                </div>
+            `).join('');
+        }
+
+        // الحصول على عنوان المعالجة
+        function getProcessingTitle() {
+            const titles = {
+                merge: 'اختر طريقة الدمج',
+                split: 'اختر طريقة التقسيم',
+                convert: 'اختر نوع التحويل', 
+                edit: 'اختر نوع التحرير'
+            };
+            return titles[appState.currentTool];
+        }
+
+        // معالجة الملفات
+        function processFiles() {
+            if (!appState.processingOptions.option) {
+                alert('يرجى اختيار خيار معالجة');
+                return;
+            }
+
+            elements.progressBar.style.display = 'block';
+            simulateProcessing();
+        }
+
+        // محاكاة المعالجة
+        function simulateProcessing() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                elements.progress.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        elements.processingSection.style.display = 'none';
+                        elements.downloadSection.style.display = 'block';
+                        elements.progressBar.style.display = 'none';
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        // تحميل الملف
+        function downloadFile() {
+            const fileName = `processed_${new Date().getTime()}.pdf`;
+            
+            // إنشاء ملف PDF بسيط كمثال
+            const pdfData = generateSamplePdf();
+            
+            // استخدام downloadjs لتحميل الملف
+            download(pdfData, fileName, "application/pdf");
+            
+            // إعادة تعيين التطبيق
+            setTimeout(resetApp, 2000);
+        }
+
+        // إنشاء ملف PDF عينة
+        function generateSamplePdf() {
+            // في التطبيق الحقيقي، هنا سيتم معالجة الملفات الفعلية
+            // هذا مجرد مثال بسيط
+            const blob = new Blob(['%PDF-1.4\n1 0 obj\n...'], { type: 'application/pdf' });
+            return blob;
+        }
+
+        // إعادة تعيين التطبيق
+        function resetApp() {
+            appState.currentTool = null;
+            appState.selectedFiles = [];
+            appState.processingOptions = {};
+            
+            elements.fileList.style.display = 'none';
+            elements.startProcess.style.display = 'none';
+            elements.processingSection.style.display = 'none';
+            elements.downloadSection.style.display = 'none';
+            elements.fileInput.value = '';
+            
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.style.border = 'none';
+            });
+            
+            elements.actionTitle.textContent = 'اختر الملفات للمعالجة';
+        }
+
+        // تهيئة التطبيق
         document.addEventListener('DOMContentLoaded', function() {
-            // إضافة تأثير عند التمرير على بطاقات الأدوات
-            const toolCards = document.querySelectorAll('.tool-card');
-            toolCards.forEach(card => {
+            initEvents();
+            
+            // إضافة تأثيرات للبطاقات
+            document.querySelectorAll('.tool-card').forEach(card => {
                 card.addEventListener('mouseenter', function() {
                     this.style.transform = 'translateY(-5px)';
                 });
@@ -529,12 +914,6 @@
                 card.addEventListener('mouseleave', function() {
                     this.style.transform = 'translateY(0)';
                 });
-            });
-            
-            // محاكاة عملية التحميل
-            const uploadArea = document.querySelector('.upload-area');
-            uploadArea.addEventListener('click', function() {
-                alert('سيتم فتح نافذة لاختيار الملفات في النسخة الكاملة');
             });
         });
     </script>
